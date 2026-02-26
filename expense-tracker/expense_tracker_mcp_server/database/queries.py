@@ -9,20 +9,44 @@ def add_expense(
     description: str,
     currency: str = 'INR',
     category: str = None,
-    date: str = None,
+    expense_date: str = None,      # renamed from date
     tags: list[str] = None,
-    notes: str = None) -> dict :
-         payload = {
+    notes: str = None,
+) -> dict:
+    payload = {
         "amount": amount,
         "description": description,
         "category": category,
-        "date": date or str(date.today()),
+        "date": expense_date or str(date.today()),   # now works correctly
         "currency": currency,
         "tags": tags,
         "notes": notes,
     }
-         res = supabase.table("expenses").insert(payload).execute()
-         return _format_row(res.data[0]) if res.data else {}
+    res = supabase.table("expenses").insert(payload).execute()
+    return _format_row(res.data[0]) if res.data else {}
+
+def fetch_expenses_by_date(expense_date: str) -> list[dict]:
+    res = (
+        supabase.table("expenses")
+        .select("*")
+        .eq("date", expense_date)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return [_format_row(row) for row in res.data]
+
+def fetch_expense_by_id(expense_id: str) -> dict | None:
+    res = supabase.table("expenses").select("*").ilike("id", f"{expense_id}%").execute()
+    return _format_row(res.data[0]) if res.data else None
+
+def update_expense(expense_id: str, updates: dict) -> dict | None:
+    updates = {k: v for k, v in updates.items() if v is not None}
+    res = supabase.table("expenses").update(updates).ilike("id", f"{expense_id}%").execute()
+    return _format_row(res.data[0]) if res.data else None
+
+def delete_expense(expense_id: str) -> bool:
+    res = supabase.table("expenses").delete().ilike("id", f"{expense_id}%").execute()
+    return len(res.data) > 0
          
 def fetch_expenses_by_category_and_duration(
     start_date: str = None,
@@ -109,8 +133,36 @@ def fetch_budgets(month: str = None) -> list[dict]:
     res = query.execute()
     return res.data
 
-def actual_vs_budget(month: str) -> list[dict]:
-     pass
+def actual_vs_budget(month: str, year: str) -> dict:
+    """
+    Compare total budget vs actual spending for a specific month and year.
+    - month: "02"
+    - year: "2026"
+    """
+    # get actual total
+    result = fetch_total_by_month_year(month, year)
+    actual_total = result["total"]
+
+    # get budget for this month
+    month_str = f"{year}-{month}"
+    res = (
+        supabase.table("budgets")
+        .select("*")
+        .eq("month", month_str)
+        .execute()
+    )
+
+    budget_total = sum(row["amount"] for row in res.data) if res.data else 0
+
+    return {
+        "month": month_str,
+        "budget": round(budget_total, 2),
+        "actual": round(actual_total, 2),
+        "remaining": round(budget_total - actual_total, 2),
+        "percent_used": round((actual_total / budget_total) * 100, 1) if budget_total else 0,
+        "status": "🔴 OVER BUDGET" if actual_total > budget_total else "🟢 WITHIN BUDGET"
+    }
+     
 
 
 
