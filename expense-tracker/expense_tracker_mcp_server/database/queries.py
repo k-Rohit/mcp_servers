@@ -9,7 +9,7 @@ def add_expense(
     description: str,
     currency: str = 'INR',
     category: str = None,
-    expense_date: str = None,      # renamed from date
+    expense_date: str = None, 
     tags: list[str] = None,
     notes: str = None,
 ) -> dict:
@@ -17,7 +17,7 @@ def add_expense(
         "amount": amount,
         "description": description,
         "category": category,
-        "date": expense_date or str(date.today()),   # now works correctly
+        "date": expense_date or str(date.today()),
         "currency": currency,
         "tags": tags,
         "notes": notes,
