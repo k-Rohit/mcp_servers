@@ -50,7 +50,7 @@ def add_expense(
 
     if result:
         return (
-            f"✅ Expense added!\n"
+            f" Expense added!\n"
             f"  ID          : {result['id']}\n"
             f"  Amount      : ₹{result['amount']} {result['currency']}\n"
             f"  Description : {result['description']}\n"
@@ -58,7 +58,7 @@ def add_expense(
             f"  Date        : {result['date']}\n"
             f"  Added at    : {result['created_at']}"
         )
-    return "❌ Failed to add expense."
+    return "Failed to add expense."
 
 @mcp.tool()
 def get_expenses_by_date(
@@ -152,14 +152,14 @@ def edit_expense(
 
     if result:
         return (
-            f"✅ Expense updated!\n"
+            f" Expense updated!\n"
             f"  Description : {result['description']}\n"
             f"  Amount      : ₹{result['amount']}\n"
             f"  Category    : {result.get('category') or 'Uncategorized'}\n"
             f"  Date        : {result['date']}\n"
             f"  Updated at  : {result['updated_at']}"
         )
-    return f"❌ Could not find or update expense with ID '{expense_id}'. Try calling get_expenses_by_date again."
+    return f"Could not find or update expense with ID '{expense_id}'. Try calling get_expenses_by_date again."
 
 
 @mcp.tool()
@@ -181,17 +181,17 @@ def delete_expense_tool(
     """
     expense = fetch_expense_by_id(expense_id)
     if not expense:
-        return f"❌ No expense found with ID '{expense_id}'. Try calling get_expenses_by_date again."
+        return f"No expense found with ID '{expense_id}'. Try calling get_expenses_by_date again."
 
     success = delete_expense(expense_id)
     if success:
         return (
-            f"🗑️ Deleted expense:\n"
+            f" Deleted expense:\n"
             f"  Description : {expense['description']}\n"
             f"  Amount      : ₹{expense['amount']}\n"
             f"  Date        : {expense['date']}"
         )
-    return "❌ Failed to delete expense."
+    return "Failed to delete expense."
 
 
 @mcp.tool()
@@ -210,7 +210,7 @@ def summarize_expenses(
         return f"No expenses recorded for {period}."
 
     lines = [
-        f"📊 Summary — {period.title()} ({start_date} → {end_date})",
+        f" Summary — {period.title()} ({start_date} → {end_date})",
         f"   Total Spent : ₹{total:.2f}",
         "",
         "   By Category :",
@@ -234,7 +234,7 @@ def summarize_by_month(
     """
     result = fetch_total_by_month_year(month, year)
     return (
-        f"📊 Summary for {result['month']}\n"
+        f" Summary for {result['month']}\n"
         f"   Total Spent : ₹{result['total']:.2f}"
     )
 
@@ -249,8 +249,8 @@ def set_budget(
     """
     result = add_budget(month=month, amount=amount)
     if result:
-        return f"✅ Budget set: ₹{amount:.2f} for {month}"
-    return "❌ Failed to set budget."
+        return f"Budget set: ₹{amount:.2f} for {month}"
+    return "Failed to set budget."
 
 
 @mcp.tool()
