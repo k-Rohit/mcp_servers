@@ -35,17 +35,34 @@ def fetch_expenses_by_date(expense_date: str) -> list[dict]:
     )
     return [_format_row(row) for row in res.data]
 
-def fetch_expense_by_id(expense_id: str) -> dict | None:
-    res = supabase.table("expenses").select("*").ilike("id", f"{expense_id}%").execute()
+def _resolve_full_id(short_id: str) -> str | None:
+    """Get full UUID from 8-char short ID"""
+    res = supabase.table("expenses").select("id").execute()
+    for row in res.data:
+        if row["id"].startswith(short_id):
+            return row["id"]
+    return None
+
+def fetch_expense_by_id(short_id: str) -> dict | None:
+    full_id = _resolve_full_id(short_id)
+    if not full_id:
+        return None
+    res = supabase.table("expenses").select("*").eq("id", full_id).execute()
     return _format_row(res.data[0]) if res.data else None
 
-def update_expense(expense_id: str, updates: dict) -> dict | None:
+def update_expense(short_id: str, updates: dict) -> dict | None:
     updates = {k: v for k, v in updates.items() if v is not None}
-    res = supabase.table("expenses").update(updates).ilike("id", f"{expense_id}%").execute()
+    full_id = _resolve_full_id(short_id)
+    if not full_id:
+        return None
+    res = supabase.table("expenses").update(updates).eq("id", full_id).execute()
     return _format_row(res.data[0]) if res.data else None
 
-def delete_expense(expense_id: str) -> bool:
-    res = supabase.table("expenses").delete().ilike("id", f"{expense_id}%").execute()
+def delete_expense(short_id: str) -> bool:
+    full_id = _resolve_full_id(short_id)
+    if not full_id:
+        return False
+    res = supabase.table("expenses").delete().eq("id", full_id).execute()
     return len(res.data) > 0
          
 def fetch_expenses_by_category_and_duration(

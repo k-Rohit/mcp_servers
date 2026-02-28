@@ -164,12 +164,20 @@ def edit_expense(
 
 @mcp.tool()
 def delete_expense_tool(
-    expense_id: Annotated[str, Field(description="The 8-character short ID shown in get_expenses_by_date list e.g. 'df55f75c'")],
+    expense_id: Annotated[str, Field(description="The 8-character short ID shown in get_expenses_by_date list e.g. 'df55f75c'. Get this by calling get_expenses_by_date first.")],
 ) -> str:
     """
     Delete an expense by its short ID.
-    ONLY call this AFTER calling get_expenses_by_date and the user has confirmed which expense to delete.
-    Always show the user what will be deleted and ask for confirmation before calling this tool.
+    
+    WORKFLOW — strictly follow this order:
+    1. ALWAYS call get_expenses_by_date first to show the user their expenses
+    2. Ask the user WHICH expense they want to delete
+    3. Show the user exactly what will be deleted (description, amount, date)
+    4. Ask for EXPLICIT confirmation — "Are you sure you want to delete this?"
+    5. Only call this tool AFTER the user confirms with yes/confirm/delete
+
+    NEVER call this tool without confirmation from the user.
+    NEVER guess which expense to delete — always show the list first.
     """
     expense = fetch_expense_by_id(expense_id)
     if not expense:

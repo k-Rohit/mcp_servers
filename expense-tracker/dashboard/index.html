@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpTrack — Dashboard</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="js/api.js"    defer></script>
+  <script src="js/kpi.js"    defer></script>
+  <script src="js/charts.js" defer></script>
+  <script src="js/table.js"  defer></script>
+  <script src="js/app.js"    defer></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">Exp<span>Track</span></div>
+      <div class="logo-sub">Expense Intelligence</div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active">📊 Overview</button>
+      <button class="nav-item">💸 Expenses</button>
+      <button class="nav-item">📈 Analytics</button>
+      <button class="nav-item">🎯 Budgets</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="live-indicator">
+        <div class="pulse"></div>
+        LIVE · 30s refresh
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Spending <span>Overview</span></div>
+        <div class="page-sub" id="last-updated">Loading...</div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="section">
+      <div class="section-label">Key Metrics</div>
+      <div class="grid-5" id="kpi-grid">
+        <div class="loading">Loading</div>
+      </div>
+    </div>
+
+    <!-- Daily + Category -->
+    <div class="section">
+      <div class="section-label">Spending Patterns</div>
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Daily Spending</span>
+            <span class="card-tag">LAST 30 DAYS</span>
+          </div>
+          <div class="chart-wrap chart-md">
+            <canvas id="daily-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">By Category</span>
+            <span class="card-tag">THIS MONTH</span>
+          </div>
+          <div class="donut-wrap" style="position:relative;">
+            <div class="chart-wrap chart-md">
+              <canvas id="category-chart"></canvas>
+            </div>
+            <div class="donut-center">
+              <span class="donut-center-value" id="category-total">—</span>
+              <span class="donut-center-label">TOTAL</span>
+            </div>
+          </div>
+          <div class="chart-legend" id="category-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Trend + Payment -->
+    <div class="section">
+      <div class="section-label">Trends & Payments</div>
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Monthly Trend</span>
+            <span class="card-tag">6 MONTHS</span>
+          </div>
+          <div class="chart-wrap chart-md">
+            <canvas id="monthly-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Payment Methods</span>
+            <span class="card-tag">THIS MONTH</span>
+          </div>
+          <div class="chart-wrap chart-md">
+            <canvas id="payment-chart"></canvas>
+          </div>
+          <div class="chart-legend" id="payment-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekday + Category Trend Stacked -->
+    <div class="section">
+      <div class="section-label">Deep Analysis</div>
+      <div class="grid-1-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Day of Week</span>
+            <span class="card-tag">AVG SPEND</span>
+          </div>
+          <div class="chart-wrap chart-md">
+            <canvas id="weekday-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Category Trend</span>
+            <span class="card-tag">STACKED · 6 MONTHS</span>
+          </div>
+          <div class="chart-wrap chart-md">
+            <canvas id="cattrend-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Expenses + Budget -->
+    <div class="section">
+      <div class="section-label">Top Expenses & Budget</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top 5 Expenses</span>
+            <span class="card-tag">THIS MONTH</span>
+          </div>
+          <div id="top-list"><div class="loading">Loading</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Budget vs Actual</span>
+            <span class="card-tag">CURRENT MONTH</span>
+          </div>
+          <div id="budget-section"><div class="loading">Loading</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Table -->
+    <div class="section">
+      <div class="section-label">All Expenses</div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Transactions</span>
+          <span class="card-tag">LAST 100</span>
+        </div>
+        <div class="filters">
+          <input  class="filter-input"  id="search-input" placeholder="Search description..." />
+          <select class="filter-select" id="cat-filter">
+            <option value="">All Categories</option>
+            <option>Food</option><option>Travel</option><option>Shopping</option>
+            <option>Bills</option><option>Health</option><option>Entertainment</option><option>Other</option>
+          </select>
+          <select class="filter-select" id="pay-filter">
+            <option value="">All Payments</option>
+            <option>upi</option><option>card</option><option>cash</option><option>netbanking</option>
+          </select>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Payment</th>
+              <th style="text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="expense-tbody">
+            <tr><td colspan="5"><div class="loading">Loading</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
