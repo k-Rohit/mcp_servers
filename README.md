@@ -1,2 +1,2 @@
 # mcp_servers
-This repository contains mcp server built by me
+This repo contains the Expense tracker mcp server
